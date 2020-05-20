@@ -7,3 +7,13 @@ C:\Users\KatDevsGames\source\repos\CelesteMod\obj\Debug\CrowdControl.csproj.Core
 C:\Users\KatDevsGames\source\repos\CelesteMod\obj\Debug\CrowdControl.csproj.CopyComplete
 C:\Users\KatDevsGames\source\repos\CelesteMod\obj\Debug\CrowdControl.dll
 C:\Users\KatDevsGames\source\repos\CelesteMod\obj\Debug\CrowdControl.pdb
+C:\Users\KatDevsGames\source\repos\CrowdControl.Packs\PC\Celeste\CelesteMod\bin\Debug\everest.yaml
+C:\Users\KatDevsGames\source\repos\CrowdControl.Packs\PC\Celeste\CelesteMod\bin\Debug\CrowdControl.dll
+C:\Users\KatDevsGames\source\repos\CrowdControl.Packs\PC\Celeste\CelesteMod\bin\Debug\CrowdControl.pdb
+C:\Users\KatDevsGames\source\repos\CrowdControl.Packs\PC\Celeste\CelesteMod\bin\Debug\Newtonsoft.Json.dll
+C:\Users\KatDevsGames\source\repos\CrowdControl.Packs\PC\Celeste\CelesteMod\bin\Debug\Newtonsoft.Json.xml
+C:\Users\KatDevsGames\source\repos\CrowdControl.Packs\PC\Celeste\CelesteMod\obj\Debug\CrowdControl.csproj.CoreCompileInputs.cache
+C:\Users\KatDevsGames\source\repos\CrowdControl.Packs\PC\Celeste\CelesteMod\obj\Debug\CrowdControl.csproj.CopyComplete
+C:\Users\KatDevsGames\source\repos\CrowdControl.Packs\PC\Celeste\CelesteMod\obj\Debug\CrowdControl.dll
+C:\Users\KatDevsGames\source\repos\CrowdControl.Packs\PC\Celeste\CelesteMod\obj\Debug\CrowdControl.pdb
+C:\Users\KatDevsGames\source\repos\CrowdControl.Packs\PC\Celeste\CelesteMod\obj\Debug\CrowdControl.csprojAssemblyReference.cache

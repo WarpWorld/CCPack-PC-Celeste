@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -78,8 +79,12 @@ namespace Celeste.Mod.CrowdControl
 
             foreach (Effect action in Instance.Effects.Values)
             {
-                action.TryStop();
-                action.Unload();
+                try
+                {
+                    action.TryStop();
+                    action.Unload();
+                }
+                catch (Exception e) { Log.Error(e); }
             }
 
             //Everest.DebugRC.EndPoints.RemoveAll(ep => ep.Path.StartsWith("/bitraces/"));
@@ -98,7 +103,11 @@ namespace Celeste.Mod.CrowdControl
 
             Player = Engine.Scene?.Tracker?.GetEntity<Player>();
 
-            foreach (Effect action in Active) { action.Update(); }
+            foreach (Effect action in Active)
+            {
+                try { action.Update(); }
+                catch (Exception e) { Log.Error(e); }
+            }
         }
 
         public override void Draw(GameTime gameTime)
@@ -112,7 +121,7 @@ namespace Celeste.Mod.CrowdControl
 
             if (!string.IsNullOrWhiteSpace(_gui_message))
             {
-                ActiveFont.DrawOutline(_gui_message, 
+                ActiveFont.DrawOutline(_gui_message,
                     Vector2.Zero, Vector2.Zero, Vector2.One * 0.5f,
                     Color.White, 1f, Color.Black);
             }
@@ -126,7 +135,11 @@ namespace Celeste.Mod.CrowdControl
                 Color.Black // Outline color
             );*/
 
-            foreach (Effect action in Active) { action.Draw(); }
+            foreach (Effect action in Active)
+            {
+                try { action.Draw(); }
+                catch (Exception e) { Log.Error(e); }
+            }
             Monocle.Draw.SpriteBatch.End();
         }
 
@@ -137,7 +150,7 @@ namespace Celeste.Mod.CrowdControl
             {
                 Log.Message($"Effect {request.code} not found.");
                 //could not find the effect
-                Respond(request, SimpleTCPClient.EffectResult.Unavailable);
+                Respond(request, SimpleTCPClient.EffectResult.Unavailable).Forget();
                 return;
             }
 
@@ -145,26 +158,30 @@ namespace Celeste.Mod.CrowdControl
             {
                 Log.Message($"Effect {request.code} could not start.");
                 //could not start the effect
-                Respond(request, SimpleTCPClient.EffectResult.Retry);
+                Respond(request, SimpleTCPClient.EffectResult.Retry).Forget();
                 return;
             }
 
             Log.Message($"Effect {request.code} started.");
-            Respond(request, SimpleTCPClient.EffectResult.Success);
+            Respond(request, SimpleTCPClient.EffectResult.Success).Forget();
         }
 
-        private void Respond(SimpleTCPClient.Request request, SimpleTCPClient.EffectResult result, string message = "")
+        private async Task<bool> Respond(SimpleTCPClient.Request request, SimpleTCPClient.EffectResult result, string message = "")
         {
             try
             {
-                _client.Respond(new SimpleTCPClient.Response
+                return await _client.Respond(new SimpleTCPClient.Response
                 {
                     id = request.id,
                     status = result,
                     message = message
-                }).ConfigureAwait(false);
+                });
             }
-            catch (Exception e) { Log.Error(e); }
+            catch (Exception e)
+            {
+                Log.Error(e);
+                return false;
+            }
         }
     }
 }

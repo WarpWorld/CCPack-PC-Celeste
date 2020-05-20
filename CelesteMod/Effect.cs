@@ -1,4 +1,6 @@
-﻿namespace Celeste.Mod.CrowdControl
+﻿using System;
+
+namespace Celeste.Mod.CrowdControl
 {
     public abstract class Effect
     {
@@ -6,6 +8,10 @@
 
         protected bool _active = false;
         private readonly object _activity_lock = new object();
+
+        private TimeSpan _time_remaining = TimeSpan.Zero;
+
+        protected Player Player => CrowdControlHelper.Instance.Player;
 
         public bool Active
         {
@@ -41,6 +47,12 @@
                 Active = true;
                 return true;
             }
+        }
+
+        public bool TryStart(TimeSpan duration)
+        {
+            _time_remaining = duration;
+            return TryStart();
         }
 
         public bool TryStop()

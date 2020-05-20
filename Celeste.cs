@@ -23,7 +23,7 @@ namespace CrowdControl.Games.Packs
             {
                 List<Effect> effects = new List<Effect>
                 {
-                    new Effect("Oshiro", "oshiro_normal"),
+                    new Effect("Oshiro", "oshiro"),
                     new Effect("Giant Oshiro", "oshiro_giant"),
                     new Effect("Seeker", "seeker"),
                     new Effect("Snowballs", "snowballs"),

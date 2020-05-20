@@ -24,10 +24,11 @@ namespace Celeste.Mod.CrowdControl.Actions
 
         public override void Update()
         {
-            if (!Active || !(Engine.Scene is Level level) || level.Entities.Contains(Chaser) || level.Entities.GetToAdd().Contains(Chaser)) { return; }
+            Player player = Player;
+            if (!Active || !(Engine.Scene is Level level) || level.Entities.Contains(Chaser) || level.Entities.GetToAdd().Contains(Chaser) || (player == null)) { return; }
 
             Music = level.Session.Audio.Music.Clone();
-            Chaser = new BadelineOldsite(CrowdControlHelper.Instance.Player.Position + new Vector2(0f, -8f), 0);
+            Chaser = new BadelineOldsite(Player.Position + new Vector2(0f, -8f), 0);
             level.Add(Chaser);
         }
 
