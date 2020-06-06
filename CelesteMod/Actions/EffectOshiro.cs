@@ -61,11 +61,18 @@ namespace Celeste.Mod.CrowdControl.Actions
     {
         public override string Code { get; } = "oshiro_giant";
 
+        private static readonly Vector2 SCALE = Vector2.One * 2;
+
         public override AngryOshiro NewOshiro(Vector2 position)
         {
-            AngryOshiro result = new AngryOshiro(position, false);
-            result.Sprite.Scale = Vector2.One * 2;
+            AngryOshiro result = new AngryOshiro(position, false) {Sprite = {Scale = SCALE} };
             return result;
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            if (Oshiro != null) { Oshiro.Sprite.Scale = SCALE; }
         }
     }
 }
