@@ -2,23 +2,34 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
+using CrowdControl.Client;
+using CrowdControl.Common;
 using Microsoft.Xna.Framework;
 using Monocle;
+using Game = Microsoft.Xna.Framework.Game;
 
 namespace Celeste.Mod.CrowdControl
 {
     public class CrowdControlHelper : DrawableGameComponent
     {
+        static CrowdControlHelper()
+        {
+            global::CrowdControl.Common.Log.OnMessage += Log.Message;
+        }
+
         public static CrowdControlHelper Instance;
 
-        private readonly SimpleTCPClient _client;
+        //private readonly SimpleTCPClient _client;
+        private readonly RemoteServiceClient _service_client;
+        private readonly Scheduler _scheduler;
 
         private string _gui_message = "";
 
         public bool GameReady = false;
 
         public Player Player;
+
+        public static readonly global::CrowdControl.Common.Game CC_GAME = new global::CrowdControl.Common.Game(5, "Celeste", "Celeste", "PC", ConnectorType.NullConnector);
 
         public readonly Dictionary<string, Effect> Effects = new Dictionary<string, Effect>();
         public IEnumerable<Effect> Active => Effects.Select(e => e.Value).Where(e => e.Active);
@@ -33,6 +44,7 @@ namespace Celeste.Mod.CrowdControl
 
         public CrowdControlHelper(Game game) : base(game)
         {
+            Log.Message("CrowdControl handler is starting...");
             // Update before and draw after the game.
             UpdateOrder = -10000;
             DrawOrder = 10000;
@@ -67,15 +79,27 @@ namespace Celeste.Mod.CrowdControl
                 });*/
             }
 
-            _client = new SimpleTCPClient();
-            _client.RequestReceived += (_, e) => RequestReceived(e);
+            Log.Message("Creating scheduler...");
+            _scheduler = new Scheduler(RequestReceived);
+            Log.Message("Starting service client...");
+            _service_client = new RemoteServiceClient(CC_GAME);
+            _service_client.OnInitialization += OnClientInitialized;
+            _service_client.OnEffectRequest += _scheduler.Enqueue;
+            _service_client.Start();
+        }
+
+        private void OnClientInitialized(InitializationBlock obj)
+        {
+            global::CrowdControl.Common.Log.Message("Client got an initialization block.");
+            _service_client.SendBlock(new GameSelection(CC_GAME, _service_client.Channel)).Forget();
         }
 
         public static void Remove()
         {
             if (Instance == null) { return; }
 
-            Instance._client.Dispose();
+            //Instance._client.Dispose();
+            Instance._service_client.Dispose();
 
             foreach (Effect action in Instance.Effects.Values)
             {
@@ -143,45 +167,34 @@ namespace Celeste.Mod.CrowdControl
             Monocle.Draw.SpriteBatch.End();
         }
 
-        private void RequestReceived(SimpleTCPClient.Request request)
-        {
-            Log.Message($"Got an effect request [{request.id}:{request.code}].");
-            if (!Effects.TryGetValue(request.code, out Effect effect))
-            {
-                Log.Message($"Effect {request.code} not found.");
-                //could not find the effect
-                Respond(request, SimpleTCPClient.EffectResult.Unavailable).Forget();
-                return;
-            }
-
-            if (!effect.TryStart())
-            {
-                Log.Message($"Effect {request.code} could not start.");
-                //could not start the effect
-                Respond(request, SimpleTCPClient.EffectResult.Retry).Forget();
-                return;
-            }
-
-            Log.Message($"Effect {request.code} started.");
-            Respond(request, SimpleTCPClient.EffectResult.Success).Forget();
-        }
-
-        private async Task<bool> Respond(SimpleTCPClient.Request request, SimpleTCPClient.EffectResult result, string message = "")
+        private void RequestReceived(EffectRequest request)
         {
             try
             {
-                return await _client.Respond(new SimpleTCPClient.Response
+                string code = request.BaseCode;
+                Log.Message($"Got an effect request [{request.ID}:{code}].");
+                if (!Effects.TryGetValue(code, out Effect effect))
                 {
-                    id = request.id,
-                    status = result,
-                    message = message
-                });
+                    Log.Message($"Effect {code} not found.");
+                    //could not find the effect
+                    _service_client.Respond(request, EffectStatus.FailPermanent).Forget();
+                    return;
+                }
+
+                if (!effect.TryStart())
+                {
+                    Log.Message($"Effect {code} could not start.");
+                    //could not start the effect
+                    DateTimeOffset? delay = _scheduler.Delay(request);
+                    _service_client.Respond(request, (delay.HasValue ? EffectStatus.DelayEstimated : EffectStatus.FailTemporary), delay).Forget();
+                    return;
+                }
+
+                Log.Message($"Effect {code} started.");
+                _service_client.Respond(request, EffectStatus.Success).Forget();
+                _scheduler.Clear(request);
             }
-            catch (Exception e)
-            {
-                Log.Error(e);
-                return false;
-            }
+            catch (Exception e) { Log.Error(e); }
         }
     }
 }

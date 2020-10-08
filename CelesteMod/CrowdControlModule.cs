@@ -17,6 +17,7 @@ namespace Celeste.Mod.CrowdControl
 
         public override void Initialize()
         {
+            Log.Message("CrowdControlModule.Initialize()");
             if (Settings.Enabled)
             {
                 CrowdControlHelper.Add();

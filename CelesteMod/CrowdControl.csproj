@@ -20,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -28,6 +29,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Celeste">
@@ -37,6 +39,9 @@
     <Reference Include="FNA">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Celeste\FNA.dll</HintPath>
       <Private>False</Private>
+    </Reference>
+    <Reference Include="JetBrains.Annotations, Version=2020.1.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>packages\JetBrains.Annotations.2020.1.0\lib\net20\JetBrains.Annotations.dll</HintPath>
     </Reference>
     <Reference Include="MMHOOK_Celeste">
       <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Celeste\MMHOOK_Celeste.dll</HintPath>
@@ -66,8 +71,48 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actions\EffectSeeker.cs" />
+    <Compile Include="Actions\EffectWind.cs" />
     <Compile Include="Actions\EffectOshiro.cs" />
     <Compile Include="Actions\EffectChaser.cs" />
+    <Compile Include="CrowdControl\AsyncWebSocketProvider.cs" />
+    <Compile Include="CrowdControl\Common\Blocks\CrowdControlBlock.cs" />
+    <Compile Include="CrowdControl\Common\Blocks\DataRequest.cs" />
+    <Compile Include="CrowdControl\Common\Blocks\DataResponse.cs" />
+    <Compile Include="CrowdControl\Common\Blocks\EffectReport.cs" />
+    <Compile Include="CrowdControl\Common\Blocks\EffectRequest.cs" />
+    <Compile Include="CrowdControl\Common\Blocks\EffectResponse.cs" />
+    <Compile Include="CrowdControl\Common\Blocks\EffectStatus.cs" />
+    <Compile Include="CrowdControl\Common\Blocks\GameSelection.cs" />
+    <Compile Include="CrowdControl\Common\Blocks\InitializationBlock.cs" />
+    <Compile Include="CrowdControl\Common\Blocks\JSONConverters.cs" />
+    <Compile Include="CrowdControl\Common\Blocks\KeepAlive.cs" />
+    <Compile Include="CrowdControl\Common\Blocks\MessageBlock.cs" />
+    <Compile Include="CrowdControl\Common\Blocks\ResponseBlock.cs" />
+    <Compile Include="CrowdControl\Common\Blocks\ShutdownBlock.cs" />
+    <Compile Include="CrowdControl\Common\ConnectorType.cs" />
+    <Compile Include="CrowdControl\Common\Entities\BaseItem.cs" />
+    <Compile Include="CrowdControl\Common\Entities\Channel.cs" />
+    <Compile Include="CrowdControl\Common\Entities\Effect.cs" />
+    <Compile Include="CrowdControl\Common\Entities\Game.cs" />
+    <Compile Include="CrowdControl\Common\Entities\InventoryItem.cs" />
+    <Compile Include="CrowdControl\Common\Entities\InventoryMenu.cs" />
+    <Compile Include="CrowdControl\Common\Entities\ItemKind.cs" />
+    <Compile Include="CrowdControl\Common\Entities\ItemType.cs" />
+    <Compile Include="CrowdControl\Common\Entities\Player.cs" />
+    <Compile Include="CrowdControl\Common\Entities\RemoteItem.cs" />
+    <Compile Include="CrowdControl\Common\Entities\Viewer.cs" />
+    <Compile Include="CrowdControl\Common\Extensions.cs" />
+    <Compile Include="CrowdControl\Common\FormulaBank.cs" />
+    <Compile Include="CrowdControl\Common\IFormulaVariable.cs" />
+    <Compile Include="CrowdControl\Common\Interfaces\IEffectPackProcessable.cs" />
+    <Compile Include="CrowdControl\Common\Interfaces\IGame.cs" />
+    <Compile Include="CrowdControl\Common\Interfaces\IItem.cs" />
+    <Compile Include="CrowdControl\Common\Interfaces\IItemType.cs" />
+    <Compile Include="CrowdControl\Common\Interfaces\IPlayer.cs" />
+    <Compile Include="CrowdControl\Common\Log.cs" />
+    <Compile Include="CrowdControl\RemoteServiceClient.cs" />
+    <Compile Include="CrowdControl\Scheduler.cs" />
     <Compile Include="Effect.cs" />
     <Compile Include="CrowdControlHelper.cs" />
     <Compile Include="CrowdControlSettings.cs" />
@@ -75,7 +120,6 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SimpleTCPClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="everest.yaml">
@@ -83,5 +127,10 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
 </Project>
