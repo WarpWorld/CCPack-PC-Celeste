@@ -12,22 +12,9 @@ namespace Celeste.Mod.CrowdControl.Actions
 
         public virtual AngryOshiro NewOshiro(Vector2 position) => new AngryOshiro(position, false);
 
-        public override void Load()
-        {
-            On.Celeste.AudioState.Apply += OnAudioStateApply;
-        }
-
-        public override void Unload()
-        {
-            On.Celeste.AudioState.Apply -= OnAudioStateApply;
-        }
-
-        public override void Start()
-        {
-        }
-
         public override void Update()
         {
+            base.Update();
             if (!Active || (!(Engine.Scene is Level level)) || level.Entities.Contains(Oshiro) || level.Entities.GetToAdd().Contains(Oshiro)) { return; }
 
             Vector2 position = new Vector2(level.Bounds.Left - 32f, level.Bounds.Top + level.Bounds.Height / 2f);
@@ -37,23 +24,11 @@ namespace Celeste.Mod.CrowdControl.Actions
 
         public override void End()
         {
+            base.End();
             if ((Oshiro == null) || (!(Engine.Scene is Level level))) { return; }
 
             level.Remove(Oshiro);
             Oshiro = null;
-        }
-
-        public void OnAudioStateApply(On.Celeste.AudioState.orig_Apply orig, AudioState state)
-        {
-            // If we're about to play the oldsite chase song while we've got an old state clone,
-            // undo the changes by reapplying the clone, then don't apply the changes.
-            /*if (Music != null && state.Music.Event == Sfxs.music_oldsite_chase) {
-                state.Music = Music;
-                Music = null;
-                return;
-            }*/
-
-            orig(state);
         }
     }
 

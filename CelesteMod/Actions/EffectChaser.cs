@@ -14,16 +14,19 @@ namespace Celeste.Mod.CrowdControl.Actions
 
         public override void Load()
         {
+            base.Load();
             On.Celeste.AudioState.Apply += OnAudioStateApply;
         }
 
         public override void Unload()
         {
+            base.Unload();
             On.Celeste.AudioState.Apply -= OnAudioStateApply;
         }
 
         public override void Update()
         {
+            base.Update();
             Player player = Player;
             if (!Active || !(Engine.Scene is Level level) || level.Entities.Contains(Chaser) || level.Entities.GetToAdd().Contains(Chaser) || (player == null)) { return; }
 
@@ -34,6 +37,7 @@ namespace Celeste.Mod.CrowdControl.Actions
 
         public override void End()
         {
+            base.End();
             Level level = Engine.Scene as Level;
             if (level == null || Chaser == null) { return; }
 

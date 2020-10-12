@@ -1,4 +1,5 @@
 ﻿using System;
+using Monocle;
 
 namespace Celeste.Mod.CrowdControl
 {
@@ -12,6 +13,14 @@ namespace Celeste.Mod.CrowdControl
         private TimeSpan _time_remaining = TimeSpan.Zero;
 
         protected Player Player => CrowdControlHelper.Instance.Player;
+
+        public virtual EffectType Type { get; }
+
+        public enum EffectType : byte
+        {
+            Instant = 0,
+            Timed = 1
+        }
 
         public bool Active
         {
@@ -37,7 +46,7 @@ namespace Celeste.Mod.CrowdControl
 
         public virtual void Draw() { }
 
-        public virtual bool IsReady() => true;
+        public virtual bool IsReady() => (Engine.Scene is Level) && (Player.Active);
 
         public bool TryStart()
         {

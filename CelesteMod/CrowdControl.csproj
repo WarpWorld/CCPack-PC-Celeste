@@ -66,6 +66,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actions\EffectInfiniteStamina.cs" />
+    <Compile Include="Actions\EffectUnlimitedDashes.cs" />
+    <Compile Include="Actions\EffectSnowballs.cs" />
+    <Compile Include="Actions\EffectKill.cs" />
+    <Compile Include="Actions\EffectWind.cs" />
+    <Compile Include="Actions\EffectLaughter.cs" />
+    <Compile Include="Actions\EffectSeeker.cs" />
     <Compile Include="Actions\EffectOshiro.cs" />
     <Compile Include="Actions\EffectChaser.cs" />
     <Compile Include="Effect.cs" />
