@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Microsoft.Xna.Framework;
 using Monocle;
 
 namespace Celeste.Mod.CrowdControl.Actions
@@ -9,9 +10,9 @@ namespace Celeste.Mod.CrowdControl.Actions
 
         public WindController Wind;
 
-        public override void Update()
+        public override void Update(GameTime gameTime)
         {
-            base.Update();
+            base.Update(gameTime);
             if (!Active || (!(Engine.Scene is Level level)) || level.Entities.Contains(Wind) || level.Entities.GetToAdd().Contains(Wind)) { return; }
 
             Wind = new WindController(WindController.Patterns.Alternating);

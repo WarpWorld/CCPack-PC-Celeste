@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -7,6 +8,10 @@ namespace Celeste.Mod.CrowdControl.Actions
     public class EffectChaser : Effect
     {
         public override string Code { get; } = "chaser";
+
+        public override EffectType Type { get; } = EffectType.Timed;
+
+        public override TimeSpan Duration { get; } = TimeSpan.FromSeconds(30);
 
         public BadelineOldsite Chaser;
 
@@ -24,9 +29,9 @@ namespace Celeste.Mod.CrowdControl.Actions
             On.Celeste.AudioState.Apply -= OnAudioStateApply;
         }
 
-        public override void Update()
+        public override void Update(GameTime gameTime)
         {
-            base.Update();
+            base.Update(gameTime);
             Player player = Player;
             if (!Active || !(Engine.Scene is Level level) || level.Entities.Contains(Chaser) || level.Entities.GetToAdd().Contains(Chaser) || (player == null)) { return; }
 

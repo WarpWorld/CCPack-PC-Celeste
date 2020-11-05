@@ -1,20 +1,28 @@
 ﻿using System;
+using System.Threading;
+using CrowdControl;
+using Microsoft.Xna.Framework;
 using Monocle;
 
 namespace Celeste.Mod.CrowdControl
 {
     public abstract class Effect
     {
+        private static int _next_id = 0;
+        private uint LocalID { get; } = unchecked((uint) Interlocked.Increment(ref _next_id));
+
         public abstract string Code { get; }
 
         protected bool _active = false;
         private readonly object _activity_lock = new object();
 
-        private TimeSpan _time_remaining = TimeSpan.Zero;
+        public TimeSpan Elapsed { get; private set; }
 
         protected Player Player => CrowdControlHelper.Instance.Player;
 
-        public virtual EffectType Type { get; }
+        public virtual EffectType Type { get; } = EffectType.Instant;
+
+        public virtual TimeSpan Duration { get; } = TimeSpan.MaxValue;
 
         public enum EffectType : byte
         {
@@ -29,22 +37,26 @@ namespace Celeste.Mod.CrowdControl
             {
                 if (_active == value) { return; }
                 _active = value;
-                if (value) { Start(); }
+                if (value)
+                {
+                    Elapsed = TimeSpan.Zero;
+                    Start();
+                }
                 else { End(); }
             }
         }
 
-        public virtual void Load() { }
+        public virtual void Load() => Log.Message($"{GetType().Name} was loaded. [{LocalID}]");
 
-        public virtual void Unload() { }
+        public virtual void Unload() => Log.Message($"{GetType().Name} was unloaded. [{LocalID}]");
 
-        public virtual void Start() { }
+        public virtual void Start() => Log.Message($"{GetType().Name} was started. [{LocalID}]");
 
-        public virtual void End() { }
+        public virtual void End() => Log.Message($"{GetType().Name} was stopped. [{LocalID}]");
 
-        public virtual void Update() { }
+        public virtual void Update(GameTime gameTime) => Elapsed += gameTime.ElapsedGameTime;
 
-        public virtual void Draw() { }
+        public virtual void Draw(GameTime gameTime) { }
 
         public virtual bool IsReady() => (Engine.Scene is Level) && (Player.Active);
 
@@ -56,12 +68,6 @@ namespace Celeste.Mod.CrowdControl
                 Active = true;
                 return true;
             }
-        }
-
-        public bool TryStart(TimeSpan duration)
-        {
-            _time_remaining = duration;
-            return TryStart();
         }
 
         public bool TryStop()

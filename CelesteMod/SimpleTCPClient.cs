@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace Celeste.Mod.CrowdControl
+namespace CrowdControl
 {
     public class SimpleTCPClient : IDisposable
     {
@@ -16,6 +16,8 @@ namespace Celeste.Mod.CrowdControl
         private readonly SemaphoreSlim _client_lock = new SemaphoreSlim(1);
         private readonly ManualResetEventSlim _ready = new ManualResetEventSlim(false);
         private readonly ManualResetEventSlim _error = new ManualResetEventSlim(false);
+
+        public bool Connected { get; private set; }
 
         private readonly CancellationTokenSource _quitting = new CancellationTokenSource();
 
@@ -33,7 +35,7 @@ namespace Celeste.Mod.CrowdControl
             GC.SuppressFinalize(this);
         }
 
-        public void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             _quitting.Cancel();
             if (disposing) { _client.Close(); }
@@ -47,17 +49,20 @@ namespace Celeste.Mod.CrowdControl
                 {
                     await _client.ConnectAsync("127.0.0.1", 58430);
                     if (!_client.Connected) { continue; }
+                    Connected = true;
                     _ready.Set();
                     await _error.WaitHandle.WaitOneAsync(_quitting.Token);
                 }
                 catch (Exception e) { Log.Error(e); }
                 finally
                 {
+                    Connected = false;
                     _error.Reset();
                     _ready.Reset();
                     if (!_quitting.IsCancellationRequested) { await Task.Delay(TimeSpan.FromSeconds(1)); }
                 }
             }
+            Connected = false;
         }
 
         private async void Listen()
@@ -71,9 +76,6 @@ namespace Celeste.Mod.CrowdControl
                     if (!(await _ready.WaitHandle.WaitOneAsync(_quitting.Token))) { continue; }
                     Socket socket = _client.Client;
 
-                    /*var result = socket.BeginReceive(buf, 0, buf.Length, SocketFlags.None, _ => { }, null);
-                    // ReSharper disable once AssignNullToNotNullAttribute
-                    int bytesRead = await Task.Factory.FromAsync(result, r => socket.EndSend(r));*/
                     int bytesRead = socket.Receive(buf);
 
                     foreach (byte b in buf.Take(bytesRead))
@@ -83,7 +85,7 @@ namespace Celeste.Mod.CrowdControl
                         {
                             string json = Encoding.UTF8.GetString(mBytes.ToArray());
                             Request req = JsonConvert.DeserializeObject<Request>(json);
-                            try { RequestReceived?.Invoke(this, req); }
+                            try { RequestReceived?.Invoke(req); }
                             catch (Exception e) { Log.Error(e); }
                             mBytes.Clear();
                         }
@@ -98,21 +100,17 @@ namespace Celeste.Mod.CrowdControl
             }
         }
 
-        public event EventHandler<Request> RequestReceived;
+        public event Action<Request> RequestReceived;
 
-        private readonly byte[] RESPONSE_TERMINATOR = new byte[] { 0 };
         public async Task<bool> Respond(Response response)
         {
             string json = JsonConvert.SerializeObject(response);
-            byte[] buffer = Encoding.UTF8.GetBytes(json);
+            byte[] buffer = Encoding.UTF8.GetBytes(json + '\0');
             Socket socket = _client.Client;
             await _client_lock.WaitAsync();
             try
             {
-                /*var result = socket.BeginSend(buffer, 0, buffer.Length, SocketFlags.None, _ => { }, null);
-                // ReSharper disable once AssignNullToNotNullAttribute
-                int bytesSent = await Task.Factory.FromAsync(result, r => socket.EndSend(r));*/
-                int bytesSent = socket.Send(buffer) + socket.Send(RESPONSE_TERMINATOR);
+                int bytesSent = socket.Send(buffer);
                 return bytesSent > 0;
             }
             catch (Exception e)
@@ -123,7 +121,7 @@ namespace Celeste.Mod.CrowdControl
             finally { _client_lock.Release(); }
         }
 
-        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
         public enum RequestType
         {
             Test = 0,
@@ -135,10 +133,13 @@ namespace Celeste.Mod.CrowdControl
         [SuppressMessage("ReSharper", "NotAccessedField.Local")]
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         [SuppressMessage("ReSharper", "UnassignedField.Local")]
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
         public class Request
         {
-            public int id;
+            private static int _next_id = 0;
+            public int id = Interlocked.Increment(ref _next_id);
             public string code;
+            public object[] parameters;
             public string viewer;
             public RequestType type;
         }

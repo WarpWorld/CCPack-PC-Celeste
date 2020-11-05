@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using Microsoft.Xna.Framework;
 using Monocle;
 
 namespace Celeste.Mod.CrowdControl.Actions
@@ -7,11 +9,15 @@ namespace Celeste.Mod.CrowdControl.Actions
     {
         public override string Code { get; } = "snowballs";
 
+        public override EffectType Type { get; } = EffectType.Timed;
+
+        public override TimeSpan Duration { get; } = TimeSpan.FromSeconds(30);
+
         public Snowball Snowball;
 
-        public override void Update()
+        public override void Update(GameTime gameTime)
         {
-            base.Update();
+            base.Update(gameTime);
             if (!Active || (!(Engine.Scene is Level level)) || level.Entities.Contains(Snowball) || level.Entities.GetToAdd().Contains(Snowball)) { return; }
 
             Snowball = new Snowball();

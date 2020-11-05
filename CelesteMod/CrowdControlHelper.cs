@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using CrowdControl;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -14,9 +18,18 @@ namespace Celeste.Mod.CrowdControl
 
         private readonly SimpleTCPClient _client;
 
-        private string _gui_message = "";
+        private readonly ConcurrentQueue<GUIMessage> _gui_messages = new ConcurrentQueue<GUIMessage>();
+        private const int MAX_GUI_MESSAGES = 5;
+
+        private class GUIMessage
+        {
+            public string message;
+            public TimeSpan elapsed;
+        }
 
         public bool GameReady = false;
+
+        private GameTime _last_time = new GameTime(TimeSpan.Zero, TimeSpan.Zero);
 
         public Player Player;
 
@@ -31,8 +44,18 @@ namespace Celeste.Mod.CrowdControl
             Celeste.Instance.Components.Add(Instance);
         }
 
+        ~CrowdControlHelper() => Dispose(false);
+
+        protected override void Dispose(bool disposing)
+        {
+            try { Log.OnMessage -= OnLogMessage; }
+            catch { /**/ }
+            base.Dispose(disposing);
+        }
+
         public CrowdControlHelper(Game game) : base(game)
         {
+            Log.OnMessage += OnLogMessage;
             // Update before and draw after the game.
             UpdateOrder = -10000;
             DrawOrder = 10000;
@@ -68,7 +91,12 @@ namespace Celeste.Mod.CrowdControl
             }
 
             _client = new SimpleTCPClient();
-            _client.RequestReceived += (_, e) => RequestReceived(e);
+            _client.RequestReceived += RequestReceived;
+        }
+
+        private void OnLogMessage(string s)
+        {
+            _gui_messages.Enqueue(new GUIMessage { message = s, elapsed = TimeSpan.Zero });
         }
 
         public static void Remove()
@@ -93,8 +121,10 @@ namespace Celeste.Mod.CrowdControl
             Instance = null;
         }
 
+        private static readonly TimeSpan MAX_GUI_MESSAGE_TIME = TimeSpan.FromSeconds(2);
         public override void Update(GameTime gameTime)
         {
+            _last_time = gameTime;
             base.Update(gameTime);
 
             // Note: This runs earlier than the game finishes loading!
@@ -105,9 +135,17 @@ namespace Celeste.Mod.CrowdControl
 
             foreach (Effect action in Active)
             {
-                try { action.Update(); }
+                try
+                {
+                    if (action.Elapsed > action.Duration) { action.TryStop(); }
+                    else { action.Update(gameTime); }
+                }
                 catch (Exception e) { Log.Error(e); }
             }
+
+            while (_gui_messages.Count > MAX_GUI_MESSAGES) { _gui_messages.TryDequeue(out _); }
+            foreach (var gm in _gui_messages) { gm.elapsed += gameTime.ElapsedGameTime; }
+            while (_gui_messages.TryPeek(out var g) && (g.elapsed > MAX_GUI_MESSAGE_TIME)) { _gui_messages.TryDequeue(out _); }
         }
 
         public override void Draw(GameTime gameTime)
@@ -119,25 +157,23 @@ namespace Celeste.Mod.CrowdControl
 
             Monocle.Draw.SpriteBatch.Begin();
 
-            if (!string.IsNullOrWhiteSpace(_gui_message))
-            {
-                ActiveFont.DrawOutline(_gui_message,
-                    Vector2.Zero, Vector2.Zero, Vector2.One * 0.5f,
-                    Color.White, 1f, Color.Black);
-            }
-            /*ActiveFont.DrawOutline(
-                $"Hello, World!\nIn-game: {Engine.Scene is Level}",
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($"Crowd Control - Connected: {_client.Connected}");
+            foreach (var msg in _gui_messages.Take(MAX_GUI_MESSAGES)) { sb.AppendLine(msg.message); }
+
+            ActiveFont.DrawOutline(
+                sb.ToString(),
                 Vector2.Zero, // Position in "GUI coordinates" (1920 x 1080)
                 Vector2.Zero, // "Center point" inside the text (0f - 1f for both x, y)
                 Vector2.One * 0.5f, // Scale (x, y)
                 Color.White, // Text color
                 1f, // Outline width
                 Color.Black // Outline color
-            );*/
+            );
 
             foreach (Effect action in Active)
             {
-                try { action.Draw(); }
+                try { action.Draw(gameTime); }
                 catch (Exception e) { Log.Error(e); }
             }
             Monocle.Draw.SpriteBatch.End();
