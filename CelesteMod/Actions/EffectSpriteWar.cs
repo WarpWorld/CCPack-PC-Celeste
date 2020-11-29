@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using CrowdControl;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Monocle;
 
 namespace Celeste.Mod.CrowdControl.Actions
@@ -26,6 +23,7 @@ namespace Celeste.Mod.CrowdControl.Actions
             }
         }
     }
+
     public class EffectSpriteWarBadeline : Effect
     {
         public override string Code { get; } = "sprite_badeline";

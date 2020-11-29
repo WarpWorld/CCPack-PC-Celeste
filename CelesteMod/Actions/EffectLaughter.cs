@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using CrowdControl;
 using Microsoft.Xna.Framework;
 using Monocle;
 
