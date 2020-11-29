@@ -30,7 +30,16 @@ namespace CrowdControl.Games.Packs
                     new Effect("Badeline", "chaser"),
                     new Effect("Kill Player", "kill"),
                     new Effect("Wind", "wind"),
-                    new Effect("Taunting Laughter", "laughter")
+                    new Effect("Taunting Laughter", "laughter"),
+                    new Effect("Unlimited Dashes", "dashes"),
+                    new Effect("Infinite Stamina", "stamina"),
+                    new Effect("Zoom Camera", "zoom"),
+                    new Effect("Earthquake", "earthquake"),
+                    new Effect("Speed Up Time", "speed"),
+                    new Effect("Hiccups", "hiccups"),
+                    new Effect("Player Sprite", "sprite", ItemKind.BidWar),
+                    new Effect("Madeline", "sprite_madeline", ItemKind.BidWarValue, "sprite"),
+                    new Effect("Badeline", "sprite_badeline", ItemKind.BidWarValue, "sprite")
                 };
                 return effects;
             }

@@ -24,10 +24,17 @@ namespace Celeste.Mod.CrowdControl
 
         public virtual TimeSpan Duration { get; } = TimeSpan.MaxValue;
 
+        public virtual Type[] ParameterTypes { get; } = new Type[0];
+
+        protected object[] Parameters { get; private set; } = new object[0];
+
+        public virtual string Group { get; }
+
         public enum EffectType : byte
         {
             Instant = 0,
-            Timed = 1
+            Timed = 1,
+            BidWar = 2
         }
 
         public bool Active
@@ -60,11 +67,14 @@ namespace Celeste.Mod.CrowdControl
 
         public virtual bool IsReady() => (Engine.Scene is Level) && (Player.Active);
 
-        public bool TryStart()
+        public bool TryStart() => TryStart(new object[0]);
+
+        public bool TryStart(object[] parameters)
         {
             lock (_activity_lock)
             {
                 if (Active || (!IsReady())) { return false; }
+                Parameters = parameters;
                 Active = true;
                 return true;
             }

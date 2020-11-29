@@ -12,7 +12,7 @@ namespace CrowdControl
 {
     public class SimpleTCPClient : IDisposable
     {
-        private readonly TcpClient _client = new TcpClient();
+        private TcpClient _client;
         private readonly SemaphoreSlim _client_lock = new SemaphoreSlim(1);
         private readonly ManualResetEventSlim _ready = new ManualResetEventSlim(false);
         private readonly ManualResetEventSlim _error = new ManualResetEventSlim(false);
@@ -47,6 +47,7 @@ namespace CrowdControl
             {
                 try
                 {
+                    _client = new TcpClient();
                     await _client.ConnectAsync("127.0.0.1", 58430);
                     if (!_client.Connected) { continue; }
                     Connected = true;
@@ -59,6 +60,8 @@ namespace CrowdControl
                     Connected = false;
                     _error.Reset();
                     _ready.Reset();
+                    try { _client.Close(); }
+                    catch { /**/ }
                     if (!_quitting.IsCancellationRequested) { await Task.Delay(TimeSpan.FromSeconds(1)); }
                 }
             }

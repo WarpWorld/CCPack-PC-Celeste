@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using CrowdControl;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -14,18 +15,25 @@ namespace Celeste.Mod.CrowdControl.Actions
 
         public override TimeSpan Duration { get; } = TimeSpan.FromSeconds(15);
 
-        public GrannyLaughSfx Laughter;
+        public Hahaha Laughter;
+        private FieldInfo autoTriggerLaughOrigin = typeof(Hahaha).GetField("autoTriggerLaughOrigin", BindingFlags.Instance | BindingFlags.NonPublic);
 
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-            var lEntity = Laughter?.Entity;
-            if (!Active || (!(Engine.Scene is Level level)) || ((lEntity != null) && ((level.Entities.Contains(lEntity) || level.Entities.GetToAdd().Contains(lEntity))))) { return; }
+            Player player = Player;
+            if (!Active || !(Engine.Scene is Level level) || (player == null)) { return; }
 
-            //level.Add((Laughter = new GrannyLaughSfx(Player.Sprite)).Entity);
-            Laughter = new GrannyLaughSfx(Player.Sprite);
-            Log.Message($"Laughter object is {(Laughter != null ? "NOT" : string.Empty)} null.");
-            Log.Message($"Laughter entity is {(Laughter.Entity != null ? "NOT" : string.Empty)} null.");
+            if (level.Entities.Contains(Laughter) || level.Entities.GetToAdd().Contains(Laughter))
+            {
+                autoTriggerLaughOrigin.SetValue(Laughter, Laughter.Position = player.Position);
+            }
+            else
+            {
+                Laughter ??= new Hahaha(player.Position, string.Empty, true, player.Position);
+                level.Add(Laughter);
+                Laughter.Enabled = true;
+            }
         }
 
         public override void End()
@@ -33,7 +41,7 @@ namespace Celeste.Mod.CrowdControl.Actions
             base.End();
             if ((Laughter == null) || (!(Engine.Scene is Level level))) { return; }
 
-            level.Remove(Laughter.Entity);
+            level.Remove(Laughter);
             Laughter = null;
         }
     }

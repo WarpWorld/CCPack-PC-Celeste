@@ -35,6 +35,7 @@ namespace Celeste.Mod.CrowdControl
 
         public readonly Dictionary<string, Effect> Effects = new Dictionary<string, Effect>();
         public IEnumerable<Effect> Active => Effects.Select(e => e.Value).Where(e => e.Active);
+        public IEnumerable<Effect> ActiveGroup(string group) => Active.Where(e => string.Equals(e.Group, group));
 
         public static void Add()
         {
@@ -68,26 +69,6 @@ namespace Celeste.Mod.CrowdControl
                 Effect action = (Effect)type.GetConstructor(Everest._EmptyTypeArray).Invoke(Everest._EmptyObjectArray);
                 action.Load();
                 Effects.Add(action.Code, action);
-
-                // For debugging purposes: Add a DebugRC helper.
-                /*Everest.DebugRC.EndPoints.Add(new RCEndPoint
-                {
-                    Path = $"/crowdcontrol/{action.Code}",
-                    PathHelp = $"/crowdcontrol/{action.Code}?active={{true|false}} (no value to toggle)",
-                    PathExample = $"/crowdcontrol/{action.Code}",
-                    Name = $"CrowdControl: {action.Code}",
-                    InfoHTML = "CrowdControl action endpoint for testing purposes.",
-                    Handle = c => {
-                        NameValueCollection data = Everest.DebugRC.ParseQueryString(c.Request.RawUrl);
-                        bool active;
-                        if (!bool.TryParse(data["active"], out active)){ active = !action.Active;}
-                        //lock (Queue)
-                        {
-                            Queue.Enqueue(Tuple.Create(action, active));
-                        }
-                        Everest.DebugRC.Write(c, $@"{{""active"": {(active ? "true" : "false")}}}");
-                    }
-                });*/
             }
 
             _client = new SimpleTCPClient();
@@ -137,8 +118,20 @@ namespace Celeste.Mod.CrowdControl
             {
                 try
                 {
-                    if (action.Elapsed > action.Duration) { action.TryStop(); }
-                    else { action.Update(gameTime); }
+                    switch (action.Type)
+                    {
+                        case Effect.EffectType.Timed:
+                            if (action.Elapsed <= action.Duration) { action.Update(gameTime); }
+                            else { action.TryStop(); }
+                            break;
+                        case Effect.EffectType.BidWar:
+                            action.Update(gameTime);
+                            break;
+                        default:
+                            action.Update(gameTime);
+                            action.TryStop();
+                            break;
+                    }
                 }
                 catch (Exception e) { Log.Error(e); }
             }
@@ -181,18 +174,35 @@ namespace Celeste.Mod.CrowdControl
 
         private void RequestReceived(SimpleTCPClient.Request request)
         {
-            Log.Message($"Got an effect request [{request.id}:{request.code}].");
+            //Log.Message($"Got an effect request [{request.id}:{request.code}].");
             if (!Effects.TryGetValue(request.code, out Effect effect))
             {
-                Log.Message($"Effect {request.code} not found.");
+                //Log.Message($"Effect {request.code} not found.");
                 //could not find the effect
                 Respond(request, SimpleTCPClient.EffectResult.Unavailable).Forget();
                 return;
             }
 
-            if (!effect.TryStart())
+            int len = effect.ParameterTypes.Length;
+            if ((request.parameters?.Length ?? 0) < len)
             {
-                Log.Message($"Effect {request.code} could not start.");
+                Respond(request, SimpleTCPClient.EffectResult.Failure).Forget();
+                return;
+            }
+            object[] p = new object[len];
+            for (int i = 0; i < len; i++)
+            {
+                p[i] = Convert.ChangeType(request.parameters[i], effect.ParameterTypes[i]);
+            }
+
+
+            if (effect.Type == Effect.EffectType.BidWar)
+            {
+                foreach (Effect e in ActiveGroup(effect.Group)) { e.TryStop(); }
+            }
+            if (!effect.TryStart(p))
+            {
+                //Log.Message($"Effect {request.code} could not start.");
                 //could not start the effect
                 Respond(request, SimpleTCPClient.EffectResult.Retry).Forget();
                 return;
