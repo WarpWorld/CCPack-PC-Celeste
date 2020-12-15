@@ -4,7 +4,7 @@ using CrowdControl;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace Celeste.Mod.CrowdControl
+namespace Celeste.Mod.CrowdControl.Actions
 {
     public abstract class Effect
     {
@@ -29,6 +29,8 @@ namespace Celeste.Mod.CrowdControl
         protected object[] Parameters { get; private set; } = new object[0];
 
         public virtual string Group { get; }
+
+        public virtual string[] Mutex { get; } = new string[0];
 
         public enum EffectType : byte
         {

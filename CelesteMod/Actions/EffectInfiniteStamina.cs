@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 
 namespace Celeste.Mod.CrowdControl.Actions
 {
+    // ReSharper disable once UnusedMember.Global
     public class EffectInfiniteStamina : Effect
     {
         public override string Code { get; } = "stamina";

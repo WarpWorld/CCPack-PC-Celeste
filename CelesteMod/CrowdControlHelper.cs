@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Celeste.Mod.CrowdControl.Actions;
 using CrowdControl;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -35,6 +36,33 @@ namespace Celeste.Mod.CrowdControl
         public readonly Dictionary<string, Effect> Effects = new Dictionary<string, Effect>();
         public IEnumerable<Effect> Active => Effects.Select(e => e.Value).Where(e => e.Active);
         public IEnumerable<Effect> ActiveGroup(string group) => Active.Where(e => string.Equals(e.Group, group));
+
+        private readonly ConcurrentDictionary<string, bool> _mutexes = new ConcurrentDictionary<string, bool>();
+
+        private bool TryGetMutexes(IEnumerable<string> mutexes)
+        {
+            List<string> captured = new List<string>();
+            bool result = true;
+            foreach (string mutex in mutexes)
+            {
+                if (_mutexes.TryAdd(mutex, true)) { captured.Add(mutex); }
+                else
+                {
+                    result = false;
+                    break;
+                }
+            }
+            if (!result) { FreeMutexes(captured); }
+            return result;
+        }
+
+        public void FreeMutexes(IEnumerable<string> mutexes)
+        {
+            foreach (string mutex in mutexes)
+            {
+                _mutexes.TryRemove(mutex, out _);
+            }
+        }
 
         public static void Add()
         {
@@ -173,10 +201,10 @@ namespace Celeste.Mod.CrowdControl
 
         private void RequestReceived(SimpleTCPClient.Request request)
         {
-            //Log.Message($"Got an effect request [{request.id}:{request.code}].");
+            Log.Debug($"Got an effect request [{request.id}:{request.code}].");
             if (!Effects.TryGetValue(request.code, out Effect effect))
             {
-                //Log.Message($"Effect {request.code} not found.");
+                Log.Error($"Effect {request.code} not found.");
                 //could not find the effect
                 Respond(request, SimpleTCPClient.EffectResult.Unavailable).Forget();
                 return;
@@ -219,7 +247,8 @@ namespace Celeste.Mod.CrowdControl
                 {
                     id = request.id,
                     status = result,
-                    message = message
+                    message = message,
+                    type = SimpleTCPClient.Response.ResponseType.EffectRequest
                 });
             }
             catch (Exception e)

@@ -5,9 +5,9 @@ using Monocle;
 namespace Celeste.Mod.CrowdControl.Actions
 {
     // ReSharper disable once UnusedMember.Global
-    public class EffectSpeed: Effect
+    public class EffectIcePhysics : Effect
     {
-        public override string Code { get; } = "speed";
+        public override string Code { get; } = "icephysics";
 
         public override EffectType Type { get; } = EffectType.Timed;
 
@@ -16,17 +16,15 @@ namespace Celeste.Mod.CrowdControl.Actions
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-            if (!Active || (!(Engine.Scene is Level))) { return; }
+            if (!Active || (!(Engine.Scene is Level level)) || (Player == null)) { return; }
 
-            Engine.TimeRate = 2f;
+            SaveData.Instance.Assists.LowFriction = true;
         }
 
         public override void End()
         {
             base.End();
-            //if (!Active || (!(Engine.Scene is Level))) { return; }
-
-            Engine.TimeRate = 1f;
+            SaveData.Instance.Assists.LowFriction = false;
         }
     }
 }

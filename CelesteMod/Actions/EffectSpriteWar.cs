@@ -3,6 +3,7 @@ using Monocle;
 
 namespace Celeste.Mod.CrowdControl.Actions
 {
+    // ReSharper disable once UnusedMember.Global
     public class EffectSpriteWarMadeline : Effect
     {
         public override string Code { get; } = "sprite_madeline";

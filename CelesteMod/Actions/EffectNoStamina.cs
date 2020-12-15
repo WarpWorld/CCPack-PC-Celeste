@@ -4,18 +4,18 @@ using Microsoft.Xna.Framework;
 namespace Celeste.Mod.CrowdControl.Actions
 {
     // ReSharper disable once UnusedMember.Global
-    public class EffectUnlimitedDashes : Effect
+    public class EffectNoStamina : Effect
     {
-        public override string Code { get; } = "dashes";
+        public override string Code { get; } = "nostamina";
 
         public override EffectType Type { get; } = EffectType.Timed;
 
-        public override TimeSpan Duration { get; } = TimeSpan.FromSeconds(30);
+        public override TimeSpan Duration { get; } = TimeSpan.FromSeconds(15);
 
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-            Player.RefillDash();
+            Player.Stamina = 0f;
         }
     }
 }

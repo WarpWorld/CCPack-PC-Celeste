@@ -5,6 +5,7 @@ using Monocle;
 
 namespace Celeste.Mod.CrowdControl.Actions
 {
+    // ReSharper disable once UnusedMember.Global
     public class EffectWind : Effect
     {
         public override string Code { get; } = "wind";

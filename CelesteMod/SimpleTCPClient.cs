@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MonoMod.Utils;
 using Newtonsoft.Json;
 
 namespace CrowdControl
@@ -17,6 +18,12 @@ namespace CrowdControl
         private readonly ManualResetEventSlim _ready = new ManualResetEventSlim(false);
         private readonly ManualResetEventSlim _error = new ManualResetEventSlim(false);
 
+        private static readonly JsonSerializerSettings JSON_SETTINGS = new JsonSerializerSettings
+        {
+            NullValueHandling = NullValueHandling.Ignore,
+            MissingMemberHandling = MissingMemberHandling.Ignore
+        };
+
         public bool Connected { get; private set; }
 
         private readonly CancellationTokenSource _quitting = new CancellationTokenSource();
@@ -25,6 +32,7 @@ namespace CrowdControl
         {
             Task.Factory.StartNew(ConnectLoop, TaskCreationOptions.LongRunning);
             Task.Factory.StartNew(Listen, TaskCreationOptions.LongRunning);
+            Task.Factory.StartNew(KeepAlive, TaskCreationOptions.LongRunning);
         }
 
         ~SimpleTCPClient() => Dispose(false);
@@ -80,14 +88,18 @@ namespace CrowdControl
                     Socket socket = _client.Client;
 
                     int bytesRead = socket.Receive(buf);
+                    //Log.Debug($"Got {bytesRead} bytes from socket.");
 
                     foreach (byte b in buf.Take(bytesRead))
                     {
                         if (b != 0) { mBytes.Add(b); }
                         else
                         {
+                            //Log.Debug($"Got a complete message: {mBytes.ToArray().ToHexadecimalString()}");
                             string json = Encoding.UTF8.GetString(mBytes.ToArray());
-                            Request req = JsonConvert.DeserializeObject<Request>(json);
+                            //Log.Debug($"Got a complete message: {json}");
+                            Request req = JsonConvert.DeserializeObject<Request>(json, JSON_SETTINGS);
+                            Log.Debug($"Got a request with ID {req.id}.");
                             try { RequestReceived?.Invoke(req); }
                             catch (Exception e) { Log.Error(e); }
                             mBytes.Clear();
@@ -103,11 +115,29 @@ namespace CrowdControl
             }
         }
 
+        private async void KeepAlive()
+        {
+            while (!_quitting.IsCancellationRequested)
+            {
+                try
+                {
+                    if (Connected) { await Respond(new Response { id = 0, type = Response.ResponseType.KeepAlive }); }
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e);
+                    _error.Set();
+                }
+                finally { if (!_quitting.IsCancellationRequested) { await Task.Delay(TimeSpan.FromSeconds(1)); } }
+            }
+        }
+
         public event Action<Request> RequestReceived;
 
         public async Task<bool> Respond(Response response)
         {
-            string json = JsonConvert.SerializeObject(response);
+            string json = JsonConvert.SerializeObject(response, JSON_SETTINGS);
             byte[] buffer = Encoding.UTF8.GetBytes(json + '\0');
             Socket socket = _client.Client;
             await _client_lock.WaitAsync();
@@ -124,41 +154,38 @@ namespace CrowdControl
             finally { _client_lock.Release(); }
         }
 
-        [SuppressMessage("ReSharper", "UnusedMember.Global")]
-        public enum RequestType
-        {
-            Test = 0,
-            Start = 1,
-            Stop = 2
-        }
-
         [Serializable]
-        [SuppressMessage("ReSharper", "NotAccessedField.Local")]
-        [SuppressMessage("ReSharper", "InconsistentNaming")]
-        [SuppressMessage("ReSharper", "UnassignedField.Local")]
-        [SuppressMessage("ReSharper", "UnusedMember.Global")]
         public class Request
         {
-            private static int _next_id = 0;
-            public int id = Interlocked.Increment(ref _next_id);
+            public int id;
             public string code;
             public object[] parameters;
             public string viewer;
             public RequestType type;
+
+            public enum RequestType
+            {
+                Test = 0,
+                Start = 1,
+                Stop = 2
+            }
         }
 
         [Serializable]
-        [SuppressMessage("ReSharper", "NotAccessedField.Local")]
-        [SuppressMessage("ReSharper", "InconsistentNaming")]
-        [SuppressMessage("ReSharper", "UnassignedField.Local")]
         public class Response
         {
             public int id;
             public EffectResult status;
             public string message;
+            public ResponseType type = ResponseType.EffectRequest;
+
+            public enum ResponseType : byte
+            {
+                EffectRequest = 0,
+                KeepAlive = 255
+            }
         }
 
-        [SuppressMessage("ReSharper", "UnusedMember.Global")]
         public enum EffectResult
         {
             /// <summary>The effect executed successfully.</summary>
