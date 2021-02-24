@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace CrowdControl
@@ -7,6 +8,7 @@ namespace CrowdControl
     {
         static Log() => File.Delete("CrowdControl.log");
 
+        [Conditional("DEBUG")]
         public static void Debug(object message) => Write(Console.Out, message);
 
         public static void Message(object message) => Write(Console.Out, message);

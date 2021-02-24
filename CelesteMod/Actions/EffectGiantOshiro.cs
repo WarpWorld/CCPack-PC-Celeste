@@ -7,6 +7,8 @@ namespace Celeste.Mod.CrowdControl.Actions
     {
         public override string Code { get; } = "oshiro_giant";
 
+        //this inherits the base oshiro's mutex and will queue with it - kat
+
         private static readonly Vector2 SCALE = Vector2.One * 2;
 
         public override AngryOshiro NewOshiro(Vector2 position)

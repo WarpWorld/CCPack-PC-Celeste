@@ -48,8 +48,8 @@ namespace CrowdControl.Games.Packs
                     //new Effect("No Gravity (30 seconds)", "nogravity"),
 
                     new Effect("Player Sprite", "sprite", ItemKind.BidWar),
-                    new Effect("Madeline", "sprite_madeline", ItemKind.BidWarValue, "sprite"),
-                    new Effect("Badeline", "sprite_badeline", ItemKind.BidWarValue, "sprite")
+                    new Effect("Badeline", "sprite_badeline", ItemKind.BidWarValue, "sprite"),
+                    new Effect("Madeline", "sprite_madeline", ItemKind.BidWarValue, "sprite")
                 };
                 return effects;
             }

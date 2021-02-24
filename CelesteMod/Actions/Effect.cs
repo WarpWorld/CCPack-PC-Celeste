@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using CrowdControl;
 using Microsoft.Xna.Framework;
@@ -16,7 +18,7 @@ namespace Celeste.Mod.CrowdControl.Actions
         protected bool _active = false;
         private readonly object _activity_lock = new object();
 
-        public TimeSpan Elapsed { get; private set; }
+        public TimeSpan Elapsed { get; set; }
 
         protected Player Player => CrowdControlHelper.Instance.Player;
 
@@ -31,6 +33,33 @@ namespace Celeste.Mod.CrowdControl.Actions
         public virtual string Group { get; }
 
         public virtual string[] Mutex { get; } = new string[0];
+
+        private static readonly ConcurrentDictionary<string, bool> _mutexes = new ConcurrentDictionary<string, bool>();
+
+        private static bool TryGetMutexes(IEnumerable<string> mutexes)
+        {
+            List<string> captured = new List<string>();
+            bool result = true;
+            foreach (string mutex in mutexes)
+            {
+                if (_mutexes.TryAdd(mutex, true)) { captured.Add(mutex); }
+                else
+                {
+                    result = false;
+                    break;
+                }
+            }
+            if (!result) { FreeMutexes(captured); }
+            return result;
+        }
+
+        public static void FreeMutexes(IEnumerable<string> mutexes)
+        {
+            foreach (string mutex in mutexes)
+            {
+                _mutexes.TryRemove(mutex, out _);
+            }
+        }
 
         public enum EffectType : byte
         {
@@ -55,13 +84,13 @@ namespace Celeste.Mod.CrowdControl.Actions
             }
         }
 
-        public virtual void Load() => Log.Message($"{GetType().Name} was loaded. [{LocalID}]");
+        public virtual void Load() => Log.Debug($"{GetType().Name} was loaded. [{LocalID}]");
 
-        public virtual void Unload() => Log.Message($"{GetType().Name} was unloaded. [{LocalID}]");
+        public virtual void Unload() => Log.Debug($"{GetType().Name} was unloaded. [{LocalID}]");
 
-        public virtual void Start() => Log.Message($"{GetType().Name} was started. [{LocalID}]");
+        public virtual void Start() => Log.Debug($"{GetType().Name} was started. [{LocalID}]");
 
-        public virtual void End() => Log.Message($"{GetType().Name} was stopped. [{LocalID}]");
+        public virtual void End() => Log.Debug($"{GetType().Name} was stopped. [{LocalID}]");
 
         public virtual void Update(GameTime gameTime) => Elapsed += gameTime.ElapsedGameTime;
 
@@ -76,6 +105,7 @@ namespace Celeste.Mod.CrowdControl.Actions
             lock (_activity_lock)
             {
                 if (Active || (!IsReady())) { return false; }
+                if (!TryGetMutexes(Mutex)) { return false; }
                 Parameters = parameters;
                 Active = true;
                 return true;
@@ -87,6 +117,7 @@ namespace Celeste.Mod.CrowdControl.Actions
             lock (_activity_lock)
             {
                 if (!Active) { return false; }
+                FreeMutexes(Mutex);
                 Active = false;
                 return true;
             }

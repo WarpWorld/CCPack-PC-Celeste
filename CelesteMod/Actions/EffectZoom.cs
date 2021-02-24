@@ -18,14 +18,14 @@ namespace Celeste.Mod.CrowdControl.Actions
             base.Update(gameTime);
             if (!Active || (!(Engine.Scene is Level level)) || (Player == null)) { return; }
 
-            level.Camera.Zoom = 2;
+            level.Camera.Zoom = 2f;
             level.Camera.Approach(Player.Position, 0.1f);
         }
 
         public override void End()
         {
             base.End();
-            if (!Active || (!(Engine.Scene is Level level)) || (Player == null)) { return; }
+            if (!(Engine.Scene is Level level)) { return; }
 
             level.Camera.Zoom = 1f;
         }

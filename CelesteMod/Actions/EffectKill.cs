@@ -8,6 +8,8 @@ namespace Celeste.Mod.CrowdControl.Actions
     {
         public override string Code { get; } = "kill";
 
+        public override string[] Mutex { get; } = { "life" };
+
         public override void Start()
         {
             base.Start();

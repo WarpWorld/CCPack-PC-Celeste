@@ -13,6 +13,8 @@ namespace Celeste.Mod.CrowdControl.Actions
 
         public override TimeSpan Duration { get; } = TimeSpan.FromSeconds(15);
 
+        public override string[] Mutex { get; } = { "screen" };
+
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);

@@ -14,6 +14,8 @@ namespace Celeste.Mod.CrowdControl.Actions
 
         public override TimeSpan Duration { get; } = TimeSpan.FromSeconds(30);
 
+        public override string[] Mutex { get; } = { "oshiro" };
+
         public AngryOshiro Oshiro;
 
         public virtual AngryOshiro NewOshiro(Vector2 position) => new AngryOshiro(position, false);

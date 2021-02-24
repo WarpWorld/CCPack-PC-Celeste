@@ -59,6 +59,8 @@ namespace CrowdControl
                     await _client.ConnectAsync("127.0.0.1", 58430);
                     if (!_client.Connected) { continue; }
                     Connected = true;
+                    try { OnConnected?.Invoke(); }
+                    catch (Exception e) { Log.Error(e); }
                     _ready.Set();
                     await _error.WaitHandle.WaitOneAsync(_quitting.Token);
                 }
@@ -100,7 +102,7 @@ namespace CrowdControl
                             //Log.Debug($"Got a complete message: {json}");
                             Request req = JsonConvert.DeserializeObject<Request>(json, JSON_SETTINGS);
                             Log.Debug($"Got a request with ID {req.id}.");
-                            try { RequestReceived?.Invoke(req); }
+                            try { OnRequestReceived?.Invoke(req); }
                             catch (Exception e) { Log.Error(e); }
                             mBytes.Clear();
                         }
@@ -133,7 +135,8 @@ namespace CrowdControl
             }
         }
 
-        public event Action<Request> RequestReceived;
+        public event Action<Request> OnRequestReceived;
+        public event Action OnConnected;
 
         public async Task<bool> Respond(Response response)
         {

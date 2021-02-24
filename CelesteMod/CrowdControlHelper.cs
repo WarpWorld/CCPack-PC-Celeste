@@ -21,6 +21,10 @@ namespace Celeste.Mod.CrowdControl
         private readonly ConcurrentQueue<GUIMessage> _gui_messages = new ConcurrentQueue<GUIMessage>();
         private const int MAX_GUI_MESSAGES = 5;
 
+        private static readonly string INITIAL_CONNECT_WARNING = $"This plugin requires the Crowd Control client software.{Environment.NewLine}Please see https://crowdcontrol.live/ for more information.";
+
+        private bool _connected_once = false;
+
         private class GUIMessage
         {
             public string message;
@@ -36,33 +40,6 @@ namespace Celeste.Mod.CrowdControl
         public readonly Dictionary<string, Effect> Effects = new Dictionary<string, Effect>();
         public IEnumerable<Effect> Active => Effects.Select(e => e.Value).Where(e => e.Active);
         public IEnumerable<Effect> ActiveGroup(string group) => Active.Where(e => string.Equals(e.Group, group));
-
-        private readonly ConcurrentDictionary<string, bool> _mutexes = new ConcurrentDictionary<string, bool>();
-
-        private bool TryGetMutexes(IEnumerable<string> mutexes)
-        {
-            List<string> captured = new List<string>();
-            bool result = true;
-            foreach (string mutex in mutexes)
-            {
-                if (_mutexes.TryAdd(mutex, true)) { captured.Add(mutex); }
-                else
-                {
-                    result = false;
-                    break;
-                }
-            }
-            if (!result) { FreeMutexes(captured); }
-            return result;
-        }
-
-        public void FreeMutexes(IEnumerable<string> mutexes)
-        {
-            foreach (string mutex in mutexes)
-            {
-                _mutexes.TryRemove(mutex, out _);
-            }
-        }
 
         public static void Add()
         {
@@ -83,7 +60,9 @@ namespace Celeste.Mod.CrowdControl
 
         public CrowdControlHelper(Game game) : base(game)
         {
+#if DEBUG
             Log.OnMessage += OnLogMessage;
+#endif
             // Update before and draw after the game.
             UpdateOrder = -10000;
             DrawOrder = 10000;
@@ -99,7 +78,15 @@ namespace Celeste.Mod.CrowdControl
             }
 
             _client = new SimpleTCPClient();
-            _client.RequestReceived += RequestReceived;
+            _client.OnConnected += ClientConnected;
+            _client.OnRequestReceived += ClientRequestReceived;
+        }
+
+        private void ClientConnected()
+        {
+            _connected_once = true;
+            try { _client.OnConnected -= ClientConnected; }
+            catch { /**/ }
         }
 
         private void OnLogMessage(string s)
@@ -148,7 +135,11 @@ namespace Celeste.Mod.CrowdControl
                     switch (action.Type)
                     {
                         case Effect.EffectType.Timed:
-                            if (action.Elapsed <= action.Duration) { action.Update(gameTime); }
+                            if (action.Elapsed <= action.Duration)
+                            {
+                                action.Update(gameTime);
+                                if ((Engine.Scene is Level level) && level.InCutscene) { action.Elapsed -= gameTime.ElapsedGameTime; }
+                            }
                             else { action.TryStop(); }
                             break;
                         case Effect.EffectType.BidWar:
@@ -178,7 +169,8 @@ namespace Celeste.Mod.CrowdControl
             Monocle.Draw.SpriteBatch.Begin();
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine($"Crowd Control - Connected: {_client.Connected}");
+            if (!_client.Connected) { sb.AppendLine("Crowd Control - Not Connected"); }
+            if (!_connected_once) { sb.AppendLine(INITIAL_CONNECT_WARNING); }
             foreach (var msg in _gui_messages.Take(MAX_GUI_MESSAGES)) { sb.AppendLine(msg.message); }
 
             ActiveFont.DrawOutline(
@@ -199,7 +191,7 @@ namespace Celeste.Mod.CrowdControl
             Monocle.Draw.SpriteBatch.End();
         }
 
-        private void RequestReceived(SimpleTCPClient.Request request)
+        private void ClientRequestReceived(SimpleTCPClient.Request request)
         {
             Log.Debug($"Got an effect request [{request.id}:{request.code}].");
             if (!Effects.TryGetValue(request.code, out Effect effect))
@@ -222,20 +214,19 @@ namespace Celeste.Mod.CrowdControl
                 p[i] = Convert.ChangeType(request.parameters[i], effect.ParameterTypes[i]);
             }
 
-
             if (effect.Type == Effect.EffectType.BidWar)
             {
                 foreach (Effect e in ActiveGroup(effect.Group)) { e.TryStop(); }
             }
             if (!effect.TryStart(p))
             {
-                //Log.Message($"Effect {request.code} could not start.");
+                //Log.Debug($"Effect {request.code} could not start.");
                 //could not start the effect
                 Respond(request, SimpleTCPClient.EffectResult.Retry).Forget();
                 return;
             }
 
-            Log.Message($"Effect {request.code} started.");
+            Log.Debug($"Effect {request.code} started.");
             Respond(request, SimpleTCPClient.EffectResult.Success).Forget();
         }
 
