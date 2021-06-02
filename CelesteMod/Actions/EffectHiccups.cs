@@ -16,6 +16,12 @@ namespace Celeste.Mod.CrowdControl.Actions
         private static readonly TimeSpan HICCUP_INTERVAL = TimeSpan.FromSeconds(2);
         private TimeSpan _last_hiccup = (-HICCUP_INTERVAL);
 
+        public override void Start()
+        {
+            base.Start();
+            _last_hiccup = (-HICCUP_INTERVAL);
+        }
+
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);

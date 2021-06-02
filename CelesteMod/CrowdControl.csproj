@@ -80,6 +80,7 @@
     <Compile Include="Actions\EffectNoGravity.cs" />
     <Compile Include="Actions\EffectNoStamina.cs" />
     <Compile Include="Actions\EffectResetLevel.cs" />
+    <Compile Include="Actions\EffectSlow.cs" />
     <Compile Include="Actions\EffectUnlimitedDashes.cs" />
     <Compile Include="Actions\EffectSnowballs.cs" />
     <Compile Include="Actions\EffectKill.cs" />
