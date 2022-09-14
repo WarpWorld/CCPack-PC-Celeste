@@ -24,7 +24,7 @@ namespace Celeste.Mod.CrowdControl.Actions
 
         public virtual EffectType Type { get; } = EffectType.Instant;
 
-        public virtual TimeSpan Duration { get; } = TimeSpan.MaxValue;
+        public virtual TimeSpan Duration { get; } = TimeSpan.Zero;
 
         public virtual Type[] ParameterTypes { get; } = new Type[0];
 

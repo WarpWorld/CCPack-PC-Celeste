@@ -13,36 +13,36 @@ namespace CrowdControl.Games.Packs
 
         public override ushort Port => 58430;
 
-        public Celeste([NotNull] IPlayer player, [NotNull] Func<CrowdControlBlock, bool> responseHandler, [NotNull] Action<object> statusUpdateHandler) : base(player, responseHandler, statusUpdateHandler) { }
+        public Celeste(IPlayer player, Func<CrowdControlBlock, bool> responseHandler, Action<object> statusUpdateHandler) : base(player, responseHandler, statusUpdateHandler) { }
 
-        public override Game Game { get; } = new Game(5, "Celeste", "Celeste", "PC", ConnectorType.SimpleTCPConnector);
+        public override Game Game { get; } = new(5, "Celeste", "Celeste", "PC", ConnectorType.SimpleTCPConnector);
 
-        public override List<Effect> Effects { get; } = new List<Effect>
+        public override List<Effect> Effects { get; } = new()
         {
-            new Effect("Oshiro (30 seconds)", "oshiro"),
-            new Effect("Giant Oshiro (30 seconds)", "oshiro_giant"),
-            new Effect("Seeker (30 seconds)", "seeker"),
-            new Effect("Snowballs (30 seconds)", "snowballs"),
-            new Effect("Badeline (30 seconds)", "chaser"),
+            new Effect("Oshiro", "oshiro"){Duration = 30},
+            new Effect("Giant Oshiro", "oshiro_giant"){Duration = 30},
+            new Effect("Seeker", "seeker"){Duration = 30},
+            new Effect("Snowballs", "snowballs"){Duration = 30},
+            new Effect("Badeline", "chaser"){Duration = 30},
             new Effect("Kill Player", "kill"),
             new Effect("Reset Level", "reset"),
-            new Effect("Wind (30 seconds)", "wind"),
-            new Effect("Taunting Laughter (15 seconds)", "laughter"),
-            new Effect("Unlimited Dashes (30 seconds)", "dashes"),
-            new Effect("Infinite Stamina (30 seconds)", "stamina"),
-            new Effect("Invincibility (30 seconds)", "invincible"),
-            new Effect("Invisibility (30 seconds)", "invisible"),
-            new Effect("No Stamina (15 seconds)", "nostamina"),
-            new Effect("Zoom Camera (30 seconds)", "zoom"),
-            new Effect("Earthquake (30 seconds)", "earthquake"),
-            new Effect("Speed Up Time (30 seconds)", "speed"),
-            new Effect("Slow Down Time (30 seconds)", "slow"),
-            new Effect("Hiccups (30 seconds)", "hiccups"),
-            new Effect("Ice Physics (30 seconds)", "icephysics"),
-            new Effect("Invert D-Pad (15 seconds)", "invertdpad"),
-            new Effect("Flip Screen (15 seconds)", "flipscreen"),
-            new Effect("Mirror World (30 seconds)", "mirrorworld"),
-            //new Effect("No Gravity (30 seconds)", "nogravity"),
+            new Effect("Wind", "wind"),
+            new Effect("Taunting Laughter", "laughter"){Duration = 15},
+            new Effect("Unlimited Dashes", "dashes"){Duration = 30},
+            new Effect("Infinite Stamina", "stamina"){Duration = 30},
+            new Effect("Invincibility", "invincible"){Duration = 30},
+            new Effect("Invisibility", "invisible"){Duration = 30},
+            new Effect("No Stamina", "nostamina"){Duration = 15},
+            new Effect("Zoom Camera", "zoom"){Duration = 30},
+            new Effect("Earthquake", "earthquake"){Duration = 30},
+            new Effect("Speed Up Time", "speed"){Duration = 30},
+            new Effect("Slow Down Time", "slow"){Duration = 30},
+            new Effect("Hiccups", "hiccups"){Duration = 30},
+            new Effect("Ice Physics", "icephysics"){Duration = 30},
+            new Effect("Invert D-Pad", "invertdpad"){Duration = 15},
+            new Effect("Flip Screen", "flipscreen"){Duration = 15},
+            new Effect("Mirror World)", "mirrorworld"){Duration = 30},
+            //new Effect("No Gravity", "nogravity"){Duration = 30},
 
             new Effect("Player Sprite", "sprite", ItemKind.BidWar),
             new Effect("Badeline", "sprite_badeline", ItemKind.BidWarValue, "sprite"),

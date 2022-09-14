@@ -92,6 +92,7 @@ namespace CrowdControl
                     int bytesRead = socket.Receive(buf);
                     //Log.Debug($"Got {bytesRead} bytes from socket.");
 
+                    //this is "slow" but the messages are tiny so we don't really care
                     foreach (byte b in buf.Take(bytesRead))
                     {
                         if (b != 0) { mBytes.Add(b); }
@@ -101,7 +102,7 @@ namespace CrowdControl
                             string json = Encoding.UTF8.GetString(mBytes.ToArray());
                             //Log.Debug($"Got a complete message: {json}");
                             Request req = JsonConvert.DeserializeObject<Request>(json, JSON_SETTINGS);
-                            Log.Debug($"Got a request with ID {req.id}.");
+                            //Log.Debug($"Got a request with ID {req.id}.");
                             try { OnRequestReceived?.Invoke(req); }
                             catch (Exception e) { Log.Error(e); }
                             mBytes.Clear();
@@ -160,49 +161,74 @@ namespace CrowdControl
         [Serializable]
         public class Request
         {
-            public int id;
-            public string code;
-            public object[] parameters;
-            public string viewer;
+            public uint id;
+            public string? code;
+            public string? message;
+            public object?[] parameters;
+            public Target?[] targets;
+            public string? viewer;
+            public int? cost;
             public RequestType type;
 
-            public enum RequestType
+            public enum RequestType : byte
             {
-                Test = 0,
-                Start = 1,
-                Stop = 2
+                Test = 0x00,
+                Start = 0x01,
+                Stop = 0x02,
+
+                Login = 0xF0,
+                KeepAlive = 0xFF
+            }
+
+            [Serializable]
+            public class Target
+            {
+                public string id;
+                public string name;
+                public string avatar;
             }
         }
 
         [Serializable]
         public class Response
         {
-            public int id;
+            public uint id;
             public EffectResult status;
-            public string message;
+            public string? message;
+            public long timeRemaining; //this is milliseconds
             public ResponseType type = ResponseType.EffectRequest;
 
             public enum ResponseType : byte
             {
-                EffectRequest = 0,
-                KeepAlive = 255
+                EffectRequest = 0x00,
+
+                Login = 0xF0,
+                KeepAlive = 0xFF
             }
         }
 
         public enum EffectResult
         {
             /// <summary>The effect executed successfully.</summary>
-            Success = 0,
+            Success = 0x00,
             /// <summary>The effect failed to trigger, but is still available for use. Viewer(s) will be refunded.</summary>
-            Failure = 1,
+            Failure = 0x01,
             /// <summary>Same as <see cref="Failure"/> but the effect is no longer available for use.</summary>
-            Unavailable = 2,
+            Unavailable = 0x02,
             /// <summary>The effect cannot be triggered right now, try again in a few seconds.</summary>
-            Retry = 3,
+            Retry = 0x03,
             /// <summary>INTERNAL USE ONLY. The effect has been queued for execution after the current one ends.</summary>
-            Queue = 4,
+            Queue = 0x04,
             /// <summary>INTERNAL USE ONLY. The effect triggered successfully and is now active until it ends.</summary>
-            Running = 5
+            Running = 0x05,
+            /// <summary>The timed effect has been paused and is now waiting.</summary>
+            Paused = 0x06,
+            /// <summary>The timed effect has been resumed and is counting down again.</summary>
+            Resumed = 0x07,
+            /// <summary>The timed effect has finished.</summary>
+            Finished = 0x08,
+            /// <summary>The processor isn't ready.</summary>
+            NotReady = 0xFF
         }
     }
 }

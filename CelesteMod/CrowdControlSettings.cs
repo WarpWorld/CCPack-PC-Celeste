@@ -4,8 +4,8 @@ namespace Celeste.Mod.CrowdControl
 {
     public class CrowdControlSettings : EverestModuleSettings
     {
-        [SettingIgnore] // Ignore in the Mod Options.
-        [YamlMember(Alias = "Enabled")] // Name of the property in the settings file.
+        [SettingIgnore]
+        [YamlMember(Alias = "Enabled")] 
         protected bool _Enabled { get; set; } = false;
         public bool Enabled {
             get => _Enabled;

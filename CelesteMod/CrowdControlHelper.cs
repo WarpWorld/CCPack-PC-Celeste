@@ -63,11 +63,9 @@ namespace Celeste.Mod.CrowdControl
 #if DEBUG
             Log.OnMessage += OnLogMessage;
 #endif
-            // Update before and draw after the game.
             UpdateOrder = -10000;
             DrawOrder = 10000;
-
-            // Find all actions and collect them.
+            
             foreach (Type type in Assembly.GetEntryAssembly().GetTypes())
             {
                 if (!typeof(Effect).IsAssignableFrom(type) || type.IsAbstract) { continue; }
@@ -110,8 +108,6 @@ namespace Celeste.Mod.CrowdControl
                 catch (Exception e) { Log.Error(e); }
             }
 
-            //Everest.DebugRC.EndPoints.RemoveAll(ep => ep.Path.StartsWith("/bitraces/"));
-
             Celeste.Instance.Components.Remove(Instance);
             Instance = null;
         }
@@ -121,8 +117,7 @@ namespace Celeste.Mod.CrowdControl
         {
             _last_time = gameTime;
             base.Update(gameTime);
-
-            // Note: This runs earlier than the game finishes loading!
+            
             if (!(Engine.Scene is GameLoader)) { GameReady = true; }
             if (!GameReady) { return; }
 
@@ -175,12 +170,12 @@ namespace Celeste.Mod.CrowdControl
 
             ActiveFont.DrawOutline(
                 sb.ToString(),
-                Vector2.Zero, // Position in "GUI coordinates" (1920 x 1080)
-                Vector2.Zero, // "Center point" inside the text (0f - 1f for both x, y)
-                Vector2.One * 0.5f, // Scale (x, y)
-                Color.White, // Text color
-                1f, // Outline width
-                Color.Black // Outline color
+                Vector2.Zero,
+                Vector2.Zero,
+                Vector2.One * 0.5f,
+                Color.White,
+                1f,
+                Color.Black
             );
 
             foreach (Effect action in Active)
@@ -221,16 +216,15 @@ namespace Celeste.Mod.CrowdControl
             if (!effect.TryStart(p))
             {
                 //Log.Debug($"Effect {request.code} could not start.");
-                //could not start the effect
                 Respond(request, SimpleTCPClient.EffectResult.Retry).Forget();
                 return;
             }
 
             Log.Debug($"Effect {request.code} started.");
-            Respond(request, SimpleTCPClient.EffectResult.Success).Forget();
+            Respond(request, SimpleTCPClient.EffectResult.Success, ((effect.Type == Effect.EffectType.Timed) ? effect.Duration : null)).Forget();
         }
 
-        private async Task<bool> Respond(SimpleTCPClient.Request request, SimpleTCPClient.EffectResult result, string message = "")
+        private async Task<bool> Respond(SimpleTCPClient.Request request, SimpleTCPClient.EffectResult result, TimeSpan? timeRemaining = null, string message = "")
         {
             try
             {
@@ -238,6 +232,7 @@ namespace Celeste.Mod.CrowdControl
                 {
                     id = request.id,
                     status = result,
+                    timeRemaining = ((long?)timeRemaining?.TotalMilliseconds) ?? 0L,
                     message = message,
                     type = SimpleTCPClient.Response.ResponseType.EffectRequest
                 });
