@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using CrowdControl.Common;
 using JetBrains.Annotations;
 using ConnectorType = CrowdControl.Common.ConnectorType;
@@ -13,11 +12,13 @@ namespace CrowdControl.Games.Packs
 
         public override ushort Port => 58430;
 
-        public Celeste(IPlayer player, Func<CrowdControlBlock, bool> responseHandler, Action<object> statusUpdateHandler) : base(player, responseHandler, statusUpdateHandler) { }
+        public override ISimpleTCPPack.MessageFormat MessageFormat => ISimpleTCPPack.MessageFormat.CrowdControlLegacy;
+
+        public Celeste(Player player, Func<CrowdControlBlock, bool> responseHandler, Action<object> statusUpdateHandler) : base(player, responseHandler, statusUpdateHandler) { }
 
         public override Game Game { get; } = new(5, "Celeste", "Celeste", "PC", ConnectorType.SimpleTCPConnector);
 
-        public override List<Effect> Effects { get; } = new()
+        public override EffectList Effects { get; } = new Effect[]
         {
             new Effect("Oshiro", "oshiro"){Duration = 30},
             new Effect("Giant Oshiro", "oshiro_giant"){Duration = 30},
@@ -41,12 +42,16 @@ namespace CrowdControl.Games.Packs
             new Effect("Ice Physics", "icephysics"){Duration = 30},
             new Effect("Invert D-Pad", "invertdpad"){Duration = 15},
             new Effect("Flip Screen", "flipscreen"){Duration = 15},
-            new Effect("Mirror World)", "mirrorworld"){Duration = 30},
+            new Effect("Mirror World", "mirrorworld"){Duration = 30},
             //new Effect("No Gravity", "nogravity"){Duration = 30},
 
-            new Effect("Player Sprite", "sprite", ItemKind.BidWar),
-            new Effect("Badeline", "sprite_badeline", ItemKind.BidWarValue, "sprite"),
-            new Effect("Madeline", "sprite_madeline", ItemKind.BidWarValue, "sprite")
+            new Effect("Player Sprite", "sprite", ItemKind.BidWar)
+            {
+                Parameters = new ParameterGroup("Soprite",
+                    new Parameter("Badeline", "sprite_badeline"),
+                    new Parameter("Madeline", "sprite_madeline")
+                )
+            },
         };
     }
 }
