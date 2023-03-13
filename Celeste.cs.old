@@ -33,7 +33,7 @@ namespace CrowdControl.Games.Packs
         public override string Host => "127.0.0.1";
         public override ushort Port => 58430;
 
-        public Celeste(Player player, Func<CrowdControlBlock, bool> responseHandler, Action<object> statusUpdateHandler) : base(player, responseHandler, statusUpdateHandler) { }
+        public Celeste(UserRecord player, Func<CrowdControlBlock, bool> responseHandler, Action<object> statusUpdateHandler) : base(player, responseHandler, statusUpdateHandler) { }
 
         public override Type MergeType => typeof(CelesteMerge);
         public override string EmbedClass => "Celeste.Celeste";

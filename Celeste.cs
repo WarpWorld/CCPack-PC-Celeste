@@ -14,7 +14,7 @@ namespace CrowdControl.Games.Packs
 
         public override ISimpleTCPPack.MessageFormat MessageFormat => ISimpleTCPPack.MessageFormat.CrowdControlLegacy;
 
-        public Celeste(Player player, Func<CrowdControlBlock, bool> responseHandler, Action<object> statusUpdateHandler) : base(player, responseHandler, statusUpdateHandler) { }
+        public Celeste(UserRecord player, Func<CrowdControlBlock, bool> responseHandler, Action<object> statusUpdateHandler) : base(player, responseHandler, statusUpdateHandler) { }
 
         public override Game Game { get; } = new(5, "Celeste", "Celeste", "PC", ConnectorType.SimpleTCPConnector);
 
@@ -47,7 +47,7 @@ namespace CrowdControl.Games.Packs
 
             new Effect("Player Sprite", "sprite", ItemKind.BidWar)
             {
-                Parameters = new ParameterGroup("Soprite",
+                Parameters = new ParameterDef("Sprite", "sprite",
                     new Parameter("Badeline", "sprite_badeline"),
                     new Parameter("Madeline", "sprite_madeline")
                 )
