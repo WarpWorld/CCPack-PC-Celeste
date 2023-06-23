@@ -27,7 +27,7 @@ public class Celeste : SimpleTCPPack
         new("Badeline", "chaser") { Duration = 30 },
         new("Kill Player", "kill"),
         new("Reset Level", "reset"),
-        new("Wind", "wind"),
+        new("Wind", "wind") { Duration = 15 },
         new("Taunting Laughter", "laughter") { Duration = 15 },
         new("Unlimited Dashes", "dashes") { Duration = 30 },
         new("Infinite Stamina", "stamina") { Duration = 30 },
