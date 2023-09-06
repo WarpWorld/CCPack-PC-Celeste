@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using CrowdControl.Common;
 using JetBrains.Annotations;
 using ConnectorType = CrowdControl.Common.ConnectorType;
+using EffectRequest = ConnectorLib.JSON.EffectRequest;
 
 namespace CrowdControl.Games.Packs;
 
@@ -12,12 +15,12 @@ public class Celeste : SimpleTCPPack
 
     public override ushort Port => 58430;
 
-    //public override ISimpleTCPPack.MessageFormat MessageFormat => ISimpleTCPPack.MessageFormat.CrowdControlLegacy;
+    public override ISimpleTCPPack.MessageFormat MessageFormat => ISimpleTCPPack.MessageFormat.CrowdControlLegacyIntermediate;
 
     public Celeste(UserRecord player, Func<CrowdControlBlock, bool> responseHandler, Action<object> statusUpdateHandler) : base(player, responseHandler, statusUpdateHandler) { }
 
     public override Game Game { get; } = new("Celeste", "Celeste", "PC", ConnectorType.SimpleTCPServerConnector);
-
+    
     public override EffectList Effects { get; } = new Effect[]
     {
         new("Oshiro", "oshiro") { Duration = 30 },
