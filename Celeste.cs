@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using CrowdControl.Common;
 using JetBrains.Annotations;
 using ConnectorType = CrowdControl.Common.ConnectorType;
-using EffectRequest = ConnectorLib.JSON.EffectRequest;
 
 namespace CrowdControl.Games.Packs;
 
