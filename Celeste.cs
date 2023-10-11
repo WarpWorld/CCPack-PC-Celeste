@@ -3,7 +3,7 @@ using CrowdControl.Common;
 using JetBrains.Annotations;
 using ConnectorType = CrowdControl.Common.ConnectorType;
 
-namespace CrowdControl.Games.Packs;
+namespace CrowdControl.Games.Packs.Celeste;
 
 [UsedImplicitly]
 public class Celeste : SimpleTCPPack
