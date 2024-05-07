@@ -132,9 +132,9 @@ public class CrowdControlHelper : DrawableGameComponent
                         if (action.Elapsed <= action.Duration)
                         {
                             action.Update(gameTime);
-                            if ((Engine.Scene is Level level) && level.InCutscene) { action.Elapsed -= gameTime.ElapsedGameTime; }
+                            if (Engine.Scene is Level { InCutscene: true }) action.Elapsed -= gameTime.ElapsedGameTime;
                         }
-                        else { action.TryStop(); }
+                        else action.TryStop();
                         break;
                     case Effect.EffectType.BidWar:
                         action.Update(gameTime);
