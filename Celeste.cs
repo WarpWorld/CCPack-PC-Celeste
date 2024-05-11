@@ -43,12 +43,13 @@ public class Celeste : SimpleTCPPack
         new("Flip Screen", "flipscreen") { Duration = 15 },
         new("Mirror World", "mirrorworld") { Duration = 30 },
 
-        new("Player Sprite", "sprite", ItemKind.BidWar)
+        //bid wars removed from CC2
+        /*new("Player Sprite", "sprite", ItemKind.BidWar)
         {
             Parameters = new ParameterDef("Sprite", "sprite",
                 new Parameter("Badeline", "badeline"),
                 new Parameter("Madeline", "madeline")
             )
-        }
+        }*/
     };
 }
