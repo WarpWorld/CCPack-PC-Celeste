@@ -113,22 +113,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if not "$(ConfigurationName)"=="Release" goto conf_done
-set CONFUSER=$(SolutionDir)ConfuserEx\Confuser.CLI.exe
-if exist "%25CONFUSER%25" goto conf_ok
-    echo ConfuserEx is missing.
-    exit -1
-:conf_ok
-"%25CONFUSER%25" "$(TargetDir)Confuser.crproj"
-del /q "$(TargetDir)Confuser.crproj"
-:conf_done
-
-if "%25SIGNTOOL%25"=="" set SIGNTOOL=%25ProgramFiles(x86)%25\Windows Kits\10\App Certification Kit\signtool.exe
-if exist "%25SIGNTOOL%25" goto sign_ok
-    echo SignTool is missing. Please install the Windows 10 App Certification Kit.
-    exit -1
-:sign_ok
-"%25SIGNTOOL%25" sign /f "$(SolutionDir)WarpWorld_Code.pfx" /p $(WW_CERTPASS) /t http://timestamp.digicert.com $(TargetPath)
-</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>
