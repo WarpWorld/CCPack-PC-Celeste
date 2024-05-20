@@ -1,0 +1,3 @@
+[submodule "PC-Celeste"]
+	path = PC-Celeste
+	url = https://github.com/WarpWorld/PC-Celeste.git
