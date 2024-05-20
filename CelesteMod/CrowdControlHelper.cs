@@ -117,8 +117,8 @@ public class CrowdControlHelper : DrawableGameComponent
         _last_time = gameTime;
         base.Update(gameTime);
             
-        if (!(Engine.Scene is GameLoader)) { GameReady = true; }
-        if (!GameReady) { return; }
+        if (!(Engine.Scene is GameLoader)) GameReady = true;
+        if (!GameReady) return;
 
         Player = Engine.Scene?.Tracker?.GetEntity<Player>();
 
@@ -148,9 +148,9 @@ public class CrowdControlHelper : DrawableGameComponent
             catch (Exception e) { Log.Error(e); }
         }
 
-        while (_gui_messages.Count > MAX_GUI_MESSAGES) { _gui_messages.TryDequeue(out _); }
-        foreach (var gm in _gui_messages) { gm.elapsed += gameTime.ElapsedGameTime; }
-        while (_gui_messages.TryPeek(out var g) && (g.elapsed > MAX_GUI_MESSAGE_TIME)) { _gui_messages.TryDequeue(out _); }
+        while (_gui_messages.Count > MAX_GUI_MESSAGES) _gui_messages.TryDequeue(out _);
+        foreach (var gm in _gui_messages) gm.elapsed += gameTime.ElapsedGameTime;
+        while (_gui_messages.TryPeek(out var g) && (g.elapsed > MAX_GUI_MESSAGE_TIME)) _gui_messages.TryDequeue(out _);
     }
 
     public override void Draw(GameTime gameTime)
