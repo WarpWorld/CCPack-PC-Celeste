@@ -7,11 +7,11 @@ namespace CrowdControl.Games.Packs.Celeste;
 [UsedImplicitly]
 public class Celeste : SimpleTCPPack
 {
+    protected override string ProcessName => "Celeste";
+
     public override string Host => "127.0.0.1";
 
     public override ushort Port => 58430;
-
-    public override ISimpleTCPPack.MessageFormat MessageFormat => ISimpleTCPPack.MessageFormat.CrowdControlLegacyIntermediate;
 
     public Celeste(UserRecord player, Func<CrowdControlBlock, bool> responseHandler, Action<object> statusUpdateHandler) : base(player, responseHandler, statusUpdateHandler) { }
 
