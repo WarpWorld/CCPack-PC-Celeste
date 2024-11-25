@@ -44,6 +44,8 @@ public class Celeste : SimpleTCPPack<SimpleTCPServerConnector>
         new("Flip Screen", "flipscreen") { Duration = 15 },
         new("Mirror World", "mirrorworld") { Duration = 30 },
 
+        new("Hype Train", "event-hype-train")// { Duration = 10 }
+
         //bid wars removed from CC2
         /*new("Player Sprite", "sprite", ItemKind.BidWar)
         {
