@@ -1,3 +1,4 @@
+using ConnectorLib.JSON;
 using ConnectorLib.SimpleTCP;
 using CrowdControl.Common;
 using JetBrains.Annotations;
@@ -15,6 +16,19 @@ public class Celeste : SimpleTCPPack<SimpleTCPServerConnector>
     public override ushort Port => 58430;
 
     public Celeste(UserRecord player, Func<CrowdControlBlock, bool> responseHandler, Action<object> statusUpdateHandler) : base(player, responseHandler, statusUpdateHandler) { }
+
+    public override HashSet<RequestType>? AllowedRequestTypes { get; } =
+    [
+        RequestType.Test,
+        RequestType.Start,
+        RequestType.Stop,
+        RequestType.GameUpdate,
+        RequestType.GenericEvent,
+        RequestType.RpcResponse,
+        RequestType.Login,
+        RequestType.PlayerInfo,
+        RequestType.KeepAlive
+    ];
 
     public override Game Game { get; } = new("Celeste", "Celeste", "PC", ConnectorType.SimpleTCPServerConnector);
     
