@@ -1,5 +1,11 @@
 # Celeste
 
+## Pack metadata
+- **Game display name:** Celeste
+- **Crowd Control game ID:** `Celeste`
+- **Connector type:** `SimpleTCPServerConnector`
+
+
 Crowd Control PC effect-pack definition for the game.
 
 ## Connector and layout
